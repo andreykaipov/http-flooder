@@ -11,9 +11,28 @@ import (
 	"time"
 )
 
-// TimeResponse wraps our date to be returned as a JSON response
+// TimeResponse wraps our time information to be returned as a JSON response
+// against the `/time` endpoint. By default, we return the time in UTC, but can
+// change this behavior via the `tz` query paremeter. Valid values for `tz` are
+// dictated by IANA's time zone database.
+//
+// See:
+// - https://www.iana.org/time-zones
+// - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+//
+// `Now` is set to the time the server's handler began processing the request.
+// `Zone` is the abbreviated timezone, e.g. EST, CET, UTC, etc.
+// `Offset` is the time offset in seconds (east of UTC) for the specified zone.
+// `UTC` is our time in UTC.
+// `Unix` is the number of seconds elapsed since 01/01/1970 UTC.
+// `Unix` is the number of nanoseconds elapsed since 01/01/1970 UTC.
 type TimeResponse struct {
-	Date time.Time `json:"date"`
+	Now      time.Time `json:"now"`
+	Zone     string    `json:"zone"`
+	Offset   int       `json:"offset"`
+	UTC      time.Time `json:"utc"`
+	Unix     int64     `json:"unix"`
+	UnixNano int64     `json:"unixNano"`
 }
 
 var bind string
@@ -53,6 +72,8 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	http.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now()
+
 		sleepRandomly(minDelay, maxDelay)
 		if failureRate > rand.Float64() {
 			http.Error(w, "oops random failure", 500)
@@ -71,9 +92,17 @@ func main() {
 			return
 		}
 
+		now = now.In(location)
+		zone, offset := now.Zone()
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&TimeResponse{
-			Date: time.Now().In(location),
+			Now:      now,
+			Zone:     zone,
+			Offset:   offset,
+			UTC:      now.UTC(),
+			Unix:     now.Unix(),
+			UnixNano: now.UnixNano(),
 		})
 	})
 
