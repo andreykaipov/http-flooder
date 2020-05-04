@@ -59,9 +59,21 @@ func main() {
 			return
 		}
 
+		tz := "UTC"
+		tzs, _ := r.URL.Query()["tz"]
+		if len(tzs) > 0 {
+			tz = tzs[0]
+		}
+
+		location, err := time.LoadLocation(tz)
+		if err != nil {
+			http.Error(w, "Bad timezone!", 400)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&TimeResponse{
-			Date: time.Now().UTC(),
+			Date: time.Now().In(location),
 		})
 	})
 
