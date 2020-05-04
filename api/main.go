@@ -35,11 +35,13 @@ type TimeResponse struct {
 	UnixNano int64     `json:"unixNano"`
 }
 
-var bind string
-var failureRate float64
-var delayInterval string
-var minDelay int
-var maxDelay int
+var (
+	bind          string
+	failureRate   float64
+	delayInterval string
+	minDelay      int
+	maxDelay      int
+)
 
 func init() {
 	flag.StringVar(&bind, "bind", ":8080", "the bind address and port for the server to listen on")
