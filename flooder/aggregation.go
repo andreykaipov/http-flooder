@@ -9,10 +9,11 @@ import (
 )
 
 // Aggregation holds the aggregate info of how our server performed against our
-// requests.
-// Successes and Failures are reported as a counter.
-// TTFB and TTLB (time to [first|last] byte) are reported as averages.
-// The aggregation may be accessed by several goroutines concurrently.
+// requests. The aggregation may be accessed by several goroutines concurrently.
+//
+// Successes and Failures are stored as counters.
+// TTFB and TTLB (time to [first|last] byte) are stored as running averages.
+// They are `time.Duration`s, stored as an int64 nanosecond count.
 type Aggregation struct {
 	Successes int           `json:"successes"`
 	Failures  int           `json:"failures"`

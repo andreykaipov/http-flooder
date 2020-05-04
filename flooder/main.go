@@ -92,9 +92,15 @@ flood:
 	}
 
 	jobs.Wait()
+
 	agg.PrettyPrint()
+	if report != "" {
+		agg.Write(report)
+	}
 }
 
+// get implements the HTTP tracing logic to calculate TTFB/TTLB, while also
+// adding these statistics to our Aggregation object.
 func get(client *http.Client, endpoint string, agg *Aggregation) {
 	var (
 		start     time.Time
@@ -104,7 +110,7 @@ func get(client *http.Client, endpoint string, agg *Aggregation) {
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		agg.Failures++
+		agg.AddFailure()
 		fmt.Fprintf(os.Stderr, "Failed forming request %v: %v\n", endpoint, err)
 		return
 	}
@@ -124,22 +130,22 @@ func get(client *http.Client, endpoint string, agg *Aggregation) {
 	}
 
 	if resp.StatusCode/100 != 2 {
-		agg.Failures++
+		agg.AddFailure()
 		fmt.Fprintf(os.Stderr, "Received non-2xx response from server: %v\n", resp.StatusCode)
 		return
 	}
 
 	if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
-		agg.Failures++
+		agg.AddFailure()
 		fmt.Fprintf(os.Stderr, "Failed reading response %v: %v\n", resp, err)
 		return
 	}
 
-	// Read the body. That was the last byte.
+	// The body was read. That was the last byte.
 	bodyRead = time.Now()
 
 	if err := resp.Body.Close(); err != nil {
-		agg.Failures++
+		agg.AddFailure()
 		fmt.Fprintf(os.Stderr, "Failed closing response body %v\n", err)
 		return
 	}
