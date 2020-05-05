@@ -23,22 +23,23 @@ var (
 	verbose           bool
 )
 
-// TODO: support timeout and maxRetry flags
+// TODO: support maxRetry flag
 //
-// Adding the timeout would involve modifying the HTTP client's transport to
-// just have a `Timeout` field (done). Then whenever a request times out or the
-// server "mysteriously" responds with an error, we can requeue this request.
-// Sounds good, but the tricky part is requeuing the request. We could make
-// a `requests` channel and use that to queue outgoing requests, at which point
-// requeuing would involve just putting it back onto the channel. Each request
-// should also know the current attempt it's on, as that's what we can use to
-// compare against our `maxRetry` flag.
+// Whenever a request times out or the server "mysteriously" responds with an
+// error, we should (optionally) retry the request to make sure it got through.
+// Note this will raise the total request count (so that request total is no
+// longer success + failues). In addition, we should probably distinguish
+// between client and server errors. That's good, but the actual tricky part is
+// requeuing the request. We could make a `requests` channel and use that to
+// queue outgoing requests, at which point requeuing would involve just putting
+// it back onto the channel. Each request should also know the current attempt
+// it's on, as that's what we can use to compare against our `maxRetry` flag.
 
 func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "the endpoint to GET, e.g. http://cool-api:8080/wow")
 	flag.IntVar(&requestsPerSecond, "requests-per-second", 1, "number of GET requests per second to initiate against the endpoint")
 	flag.IntVar(&duration, "duration", 10, "how long would we like to run the test for (in seconds)?")
-	flag.IntVar(&timeout, "timeout", 1000, "timeout in milliseconds for the request to finish before retrying (unused)")
+	flag.IntVar(&timeout, "timeout", 1000, "timeout in milliseconds for the request to finish before failing")
 	flag.IntVar(&maxRetry, "maxRetry", 3, "max retries to make for failed requests (unused)")
 	flag.StringVar(&report, "report", "", "output the report to a JSON file")
 	flag.BoolVar(&verbose, "verbose", false, "verbose logging while querying the servers")
@@ -46,6 +47,12 @@ func init() {
 }
 
 func main() {
+	// Disabling keepalives on our client's transport is important so we can
+	// capture the start of the connection (i.e. httptrace's `ConnectStart`
+	// event). Otherwise, since our host machine keeps the connection open
+	// to the server after our request ends, any subsequent requests will
+	// not need to initiate a connection, and we'll be unable to calculate
+	// the TTFB and TTLB accurately for them.
 	client := &http.Client{
 		Timeout: time.Duration(timeout) * time.Millisecond,
 		Transport: &http.Transport{
@@ -101,12 +108,11 @@ flood:
 
 // get implements the HTTP tracing logic to calculate TTFB/TTLB, while also
 // adding these statistics to our Aggregation object.
+//
+// see https://golang.org/pkg/net/http/httptrace/#ClientTrace for the builtin
+// events the httptrace package exposes for client HTTP requests.
 func get(client *http.Client, endpoint string, agg *Aggregation) {
-	var (
-		start     time.Time
-		firstByte time.Time
-		bodyRead  time.Time
-	)
+	var connectStart, firstByte, bodyRead time.Time
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -119,7 +125,7 @@ func get(client *http.Client, endpoint string, agg *Aggregation) {
 	resp, err := client.Do(req.WithContext(httptrace.WithClientTrace(
 		req.Context(),
 		&httptrace.ClientTrace{
-			ConnectStart:         func(_, _ string) { start = time.Now() },
+			ConnectStart:         func(_, _ string) { connectStart = time.Now() },
 			GotFirstResponseByte: func() { firstByte = time.Now() },
 		},
 	)))
@@ -150,7 +156,7 @@ func get(client *http.Client, endpoint string, agg *Aggregation) {
 		return
 	}
 
-	ttfb, ttlb := firstByte.Sub(start), bodyRead.Sub(start)
+	ttfb, ttlb := firstByte.Sub(connectStart), bodyRead.Sub(connectStart)
 
 	agg.AddSuccess(ttfb, ttlb)
 	if verbose {
