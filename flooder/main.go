@@ -10,6 +10,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	agg "./aggregation"
 )
 
 var (
@@ -65,7 +67,7 @@ func main() {
 		},
 	}
 
-	agg := &Aggregation{}
+	agg := &agg.Aggregation{}
 	jobs := sync.WaitGroup{}
 	secondsTicker := time.NewTicker(1 * time.Second)
 	tick := 0
@@ -116,7 +118,7 @@ flood:
 //
 // see https://golang.org/pkg/net/http/httptrace/#ClientTrace for the builtin
 // events the httptrace package exposes for client HTTP requests.
-func get(client *http.Client, endpoint string, agg *Aggregation) {
+func get(client *http.Client, endpoint string, agg *agg.Aggregation) {
 	var connectStart, firstByte, bodyRead time.Time
 
 	req, err := http.NewRequest("GET", endpoint, nil)
