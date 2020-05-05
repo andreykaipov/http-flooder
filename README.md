@@ -5,7 +5,7 @@ Hello! This project contains:
 1. A CLI to flood HTTP servers with requests (in the `flooder` directory).
 1. A dummy api (in the `dummy-api` directory).
 
-Contents:
+Table of Contents:
 - [Flooder](#flooder) - documentation for the `flooder` CLI.
 - [Dummy API](#dummy-api) - documentation for the dummy API.
 - [Docker](#docker) - examples showcasing the interaction between the two via
@@ -99,9 +99,9 @@ following flags, namely `delay-interval` and `failure-rate`.
 ### Let's see
 
 ```console
-❯ make api
+❯ make dummy-api
 
-❯ ./bin/api -failure-rate 0 &
+❯ ./bin/dummy-api -failure-rate 0 &
 
 ❯ curl -sG http://localhost:8080/time -d tz=America/New_York | jq -r '"\(.zone) \(.unix)"'
 EDT 1588641463
@@ -119,7 +119,7 @@ EEST 1588641513
   "unixNano": 1588641749677184300
 }
 
-❯ pkill api
+❯ kill -TERM $!
 ```
 
 For more documentation about valid values for `tz`, please see the [godoc for
@@ -128,8 +128,13 @@ package](https://pkg.go.dev/github.com/andreykaipov/http-flooder/dummy-api/api?t
 
 ## Docker
 
-Once we've built our images via `make images`, let's create a Docker network for
-both our applications:
+Build our images:
+
+```console
+❯ make images
+```
+
+Create a Docker network for both our applications:
 
 ```console
 ❯ docker network create wow
@@ -139,14 +144,15 @@ Start up the dummy API, serving responses randomly with a rather large failure
 rate of 27%, and a delay interval of anywhere from 0 to 50 milliseconds:
 
 ```console
-❯ docker run --rm --network=wow --name=dummy dummy-api -failure-rate 0.27 -delay-interval 0,50
+❯ docker run --rm --detach --network=wow --name=api dummy-api -failure-rate 0.27 -delay-interval 0,50
 ```
 
-In a new window (or just run the above container in the background with `-d`),
-let's run the flooder image for 100 seconds at 100 requests per second:
+Once we're done testing, don't forget to stop this container via `docker stop
+api`. For now, let's continue and run the flooder against our API for 100
+seconds at 100 requests per second:
 
 ```console
-❯ docker run --rm --network=wow flooder -endpoint http://dummy:8080/time -duration 100 -requests-per-second 100 2>/dev/null
+❯ docker run --rm --network=wow flooder -endpoint http://api:8080/time -duration 100 -requests-per-second 100 2>/dev/null
 Starting flood. :-)
 Running for 100 second(s), initiating 100 request(s) per second. Total requests
 send to server will be 10000.
@@ -175,10 +181,10 @@ For example, if we restart the dummy API with a delay interval of 0ms, and rerun
 the above flood, we'll get an average TTxB of about 4xms, not quite 25ms (the
 average of 0ms and 50ms) less than the 51ms TTFxB above. In fact, the delta
 between the TTLB and TTFB seems to increase if there's no delay interval! Since
-the delay is just implemented as a sleep, it's likely the dummy API can dedicate
-CPU cycles from the sleeping goroutines to actually accepting more concurrent
-requests at once, therefore increasing TTFB, but decreasing its relative TTLB.
-Very cool!
+the delay is just implemented as a sleep, the most likely explanation is the OS
+is dedicating the CPU cycles from the sleeping goroutines to accepting more
+concurrent connections instead. This delay increases TTFB, but decreases the
+relative TTLB. Very cool!
 
 ## TODO
 
