@@ -39,7 +39,7 @@ var (
 
 func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "the endpoint to GET, e.g. http://cool-api:8080/wow")
-	flag.IntVar(&requestsPerSecond, "requests-per-second", 1, "number of GET requests per second to initiate against the endpoint")
+	flag.IntVar(&requestsPerSecond, "requestsPerSecond", 1, "number of GET requests per second to initiate against the endpoint")
 	flag.IntVar(&duration, "duration", 10, "how long would we like to run the test for (in seconds)?")
 	flag.IntVar(&timeout, "timeout", 3000, "timeout in milliseconds for the entire request to finish before failing")
 	flag.IntVar(&maxRetry, "maxRetry", 3, "max retries to make for failed requests (not implemented)")
