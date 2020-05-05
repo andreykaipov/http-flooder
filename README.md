@@ -7,9 +7,16 @@ Hello! This project contains:
 
 Contents:
 - [Flooder](#flooder) - documentation for the `flooder` CLI.
-- [Dummy API](#dummy api) - documentation for the dummy API.
+- [Dummy API](#dummy-api) - documentation for the dummy API.
 - [Docker](#docker) - examples showcasing the interaction between the two via
   Docker.
+
+Both applications are written in Go, so you'll need to have it installed to be
+bale to compile the programs. They only use the standard library, so don't
+worry - mucking around with the GOPATH or using Go modules isn't necessary.
+
+You can also skip to the [Docker](#docker) section to just build the
+applications with that.
 
 ## Flooder
 
@@ -122,7 +129,58 @@ package](https://pkg.go.dev/github.com/andreykaipov/http-flooder/dummy-api/api?t
 
 ## Docker
 
+Once we've built our images via `make images`, let's create a Docker network for
+both our applications:
 
+```console
+❯ docker network create wow
+```
+
+Start up the dummy API, serving responses randomly with a rather large failure
+rate of 27%, and a delay interval of anywhere from 0 to 50 milliseconds:
+
+```console
+❯ docker run --rm --network=wow --name=dummy dummy-api -failure-rate 0.27 -delay-interval 0,50
+```
+
+In a new window (or just run the above container in the background with `-d`),
+let's run the flooder image for 100 seconds at 100 requests per second:
+
+```console
+❯ docker run --rm --network=wow flooder -endpoint http://dummy:8080/time -duration 100 -requests-per-second 100 2>/dev/null
+Starting flood. :-)
+Running for 100 second(s), initiating 100 request(s) per second. Total requests
+send to server will be 10000.
+Sending batch 0
+Sending batch 1
+Sending batch 2
+...
+Sending batch 99
+Sending batch 100
+
+Total Requests: 10000
+     Successes: 7311
+      Failures: 2689
+  Success Rate: 73.11000%
+  Failure Rate: 26.89000%
+  Average TTFB: 51.030573ms
+  Average TTLB: 51.820745ms
+         Delta: 790.172µs
+```
+
+Cool! Looks like the reported failure rate closely matches to what our dummy API
+was invoked with. However, changes in the delay interval and how it affects the
+TTFB and TLLB is a bit more subtle since concurrent requests also slow server
+response times too.
+
+For example, if we restart the dummy API with a delay interval of 0ms, and rerun
+the above flood, we'll get an average TTxB of about 4xms, not quite 25ms (the
+average of 0ms and 50ms) less than the 51ms TTFxB above. In fact, the delta
+between the TTLB and TTFB seems to increase if there's no delay interval! Since
+the delay is just implemented as a sleep, it's likely the dummy API can dedicate
+CPU cycles from the sleeping goroutines to actually accepting more concurrent
+requests at once, therefore increasing TTFB, but decreasing its relative TTLB.
+Very cool!
 
 ## TODO
 
@@ -134,3 +192,5 @@ package](https://pkg.go.dev/github.com/andreykaipov/http-flooder/dummy-api/api?t
 - abstract the `flooder`'s `request-per-second` parameter into a `batch-size`
   and `interval` paremeter, so that users can have more control over the flood
   rate.
+
+- add a pipeline for building and pushing the images up to a Docker registry.
