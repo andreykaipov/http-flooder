@@ -14,13 +14,13 @@ endpoint. We can customize the way it works through the following flags:
 
 | flag                | type   | description                                                        | default |
 |---------------------|--------|--------------------------------------------------------------------|---------|
-| duration            | int    | how long would we like to run the test for (in seconds)?           | 10      |
+| duration            | int    | how long would we like to run the test for (in seconds)?           | `10`    |
 | endpoint            | string | the endpoint to GET, e.g. http://cool-api:8080/wow                 |         |
-| maxRetry            | int    | max retries to make for failed requests **(not implemented)**      | 3       |
-| report              | string | output the report to a JSON file                                   | ""      |
-| requests-per-second | int    | number of GET requests per second to initiate against the endpoint | 1       |
-| timeout             | int    | timeout in milliseconds for the request to finish before failing   | 1000    |
-| verbose             | bool   | verbose logging while querying the servers                         | false   |
+| maxRetry            | int    | max retries to make for failed requests **(not implemented)**      | `3`     |
+| report              | string | output the report to a JSON file                                   | `""`    |
+| requests-per-second | int    | number of GET requests per second to initiate against the endpoint | `1`     |
+| timeout             | int    | timeout in milliseconds for the request to finish before failing   | `1000`  |
+| verbose             | bool   | verbose logging while querying the servers                         | `false` |
 
 After a run, the tool will output a summary about how well the server performed
 against our flood of requests.
@@ -57,7 +57,7 @@ Total Requests: 12
 }
 ```
 
-Here our definitions for TTFB and TTLB are as follows:
+The definitions for TTFB and TTLB that we're using are as follows:
 
 **Time to first byte** - the duration between the time when we initiate
 a connection to the server and the time when we receive the first byte of the
@@ -67,23 +67,25 @@ server's response headers.
 a connection to the server and the time when we finish reading the server's
 response body.
 
-## Dummy webserver
+## API
 
 ### How does it work?
 
-The dummy webserver, under `api`, is what it sounds like. It'll spin up a
-webserver serving one endpoint `/time` that will output time information about
-whatever timezone you pass it (UTC by default).
+A dummy webserver, under the `api` directory, is what it sounds like. It'll spin
+up a webserver serving one endpoint `/time` that will output time information
+about whatever timezone (UTC by default) you pass it via the `tz` query
+parameter.
+
+TODO add reference to godoc here
 
 In addition, we can customize how reliable our webserver behaves through the
 following flags, namely `delay-interval` and `failure-rate`.
 
-| flag           | type   | description                                                       | default |
-|----------------|--------|-------------------------------------------------------------------|---------|
-| bind           | string | the bind address and port for the server to listen on             | ":8080" |
-| endpoint       | string | the endpoint to GET, e.g. http://cool-api:8080/wow                |         |
-| delay-interval | string | add a random delay in milliseconds before processing a request    | "0,100" |
-| failure-rate   | float  | percentage of requests to respond with 500s to, e.g. 0.13 for 13% | 0.1     |
+| flag           | type   | description                                                       | default   |
+|----------------|--------|-------------------------------------------------------------------|-----------|
+| bind           | string | the bind address and port for the server to listen on             | `":8080"` |
+| delay-interval | string | add a random delay in milliseconds before processing a request    | `"0,100"` |
+| failure-rate   | float  | percentage of requests to respond with 500s to, e.g. 0.13 for 13% | `0.1`     |
 
 ### Let's see
 
