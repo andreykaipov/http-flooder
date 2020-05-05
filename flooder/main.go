@@ -108,7 +108,10 @@ flood:
 
 	agg.PrettyPrint()
 	if report != "" {
-		agg.Write(report)
+		if err := agg.Write(report); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed writing report: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
