@@ -47,6 +47,11 @@ func init() {
 }
 
 func main() {
+	if endpoint == "" {
+		fmt.Fprintln(os.Stderr, "You gotta specify an endpoint.")
+		os.Exit(1)
+	}
+
 	// Disabling keepalives on our client's transport is important so we can
 	// capture the start of the connection (i.e. httptrace's `ConnectStart`
 	// event). Otherwise, since our host machine keeps the connection open
