@@ -1,0 +1,9 @@
+linters:
+  enable:
+  - wsl
+
+issues:
+  exclude:
+  # wsl
+  - go statements can only invoke functions assigned on line above
+  - return statements should not be cuddled if block has more than two lines 

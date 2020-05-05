@@ -21,5 +21,10 @@ flooder:
 flooder-image:
 	docker build -t flooder flooder/
 
+lint:
+	golangci-lint run ./flooder
+	golangci-lint run ./dummy-api
+	shellcheck test.sh
+
 clean:
 	rm -rf bin

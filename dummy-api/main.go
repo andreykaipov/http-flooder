@@ -61,7 +61,7 @@ func main() {
 		}
 
 		tz := "UTC"
-		tzs, _ := r.URL.Query()["tz"]
+		tzs := r.URL.Query()["tz"]
 		if len(tzs) > 0 {
 			tz = tzs[0]
 		}
@@ -76,17 +76,20 @@ func main() {
 		zone, offset := now.Zone()
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(&api.TimeResponse{
+		if err := json.NewEncoder(w).Encode(&api.TimeResponse{
 			Now:      now,
 			Zone:     zone,
 			Offset:   offset,
 			UTC:      now.UTC(),
 			Unix:     now.Unix(),
 			UnixNano: now.UnixNano(),
-		})
+		}); err != nil {
+			http.Error(w, "We've failed you. :(", 500)
+		}
 	})
 
 	log.Printf("Listening on %s", bind)
+
 	if err := http.ListenAndServe(bind, nil); err != nil {
 		log.Fatal(err)
 	}
