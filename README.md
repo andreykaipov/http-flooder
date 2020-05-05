@@ -79,9 +79,7 @@ response body.
 
 A dummy API is exactly what it sounds like. It'll spin up a web server serving
 one endpoint `/time` that will output time information about whatever timezone
-we pass it via the `tz` query parameter (UTC by default).
-
-TODO add reference to godoc here
+we pass it via the `tz` query parameter (UTC by default). See examples below.
 
 In addition, we can customize how reliable our web server behaves through the
 following flags, namely `delay-interval` and `failure-rate`.
@@ -117,6 +115,10 @@ EEST 1588641513
 
 ❯ pkill api
 ```
+
+For more documentation about valid values for `tz`, please see the [godoc for
+the `api`
+package](https://pkg.go.dev/github.com/andreykaipov/http-flooder/dummy-api/api?tab=doc).
 
 ## Docker
 
