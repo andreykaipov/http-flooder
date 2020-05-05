@@ -46,7 +46,6 @@ against our flood of requests.
 ❯ ./bin/flooder -endpoint http://google.com -requests-per-second 3 -duration 4 -report report.json
 Starting flood. :-)
 Running for 4 second(s), initiating 3 request(s) per second. Total requests send to server will be 12.
-Sending batch 0
 Sending batch 1
 Sending batch 2
 Sending batch 3
@@ -151,7 +150,6 @@ let's run the flooder image for 100 seconds at 100 requests per second:
 Starting flood. :-)
 Running for 100 second(s), initiating 100 request(s) per second. Total requests
 send to server will be 10000.
-Sending batch 0
 Sending batch 1
 Sending batch 2
 ...

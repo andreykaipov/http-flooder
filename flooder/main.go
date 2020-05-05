@@ -83,14 +83,13 @@ flood:
 	for {
 		select {
 		case <-secondsTicker.C:
-			fmt.Println("Sending batch", tick)
-
 			tick++
 			if tick > duration {
 				secondsTicker.Stop()
 				break flood
 			}
 
+			fmt.Println("Sending batch", tick)
 			go func() {
 				jobs.Add(1)
 				for i := 0; i < requestsPerSecond; i++ {
