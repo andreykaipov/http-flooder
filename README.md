@@ -2,8 +2,14 @@
 
 Hello! This project contains:
 
-1. A CLI to flood HTTP servers with requests (in the `flooder` directory)
-1. A dummy webserver (in the `api` directory)
+1. A CLI to flood HTTP servers with requests (in the `flooder` directory).
+1. A dummy webserver (in the `api` directory).
+
+Contents:
+- [Flooder](#flooder) - documentation for the `flooder` CLI.
+- [API](#api) - documentation for the dummy webserver.
+- [Docker](#docker) - examples showcasing the interaction between the two via
+  Docker.
 
 ## Flooder
 
@@ -112,6 +118,10 @@ EEST 1588641513
 
 ❯ pkill api
 ```
+
+## Docker
+
+
 
 ## TODO
 
