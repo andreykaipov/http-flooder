@@ -12,7 +12,7 @@ Contents:
   Docker.
 
 Both applications are written in Go, so you'll need to have it installed to be
-bale to compile the programs. They only use the standard library, so don't
+able to compile the programs. They only use the standard library, so don't
 worry - mucking around with the GOPATH or using Go modules isn't necessary.
 
 You can also skip to the [Docker](#docker) section to just build the
