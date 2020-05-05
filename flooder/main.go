@@ -19,7 +19,6 @@ var (
 	requestsPerSecond int
 	duration          int
 	timeout           int
-	concurrency       int
 	maxRetry          int
 	report            string
 	verbose           bool
@@ -79,34 +78,34 @@ Running for %d second(s), initiating %d request(s) per second. Total requests se
 		requestsPerSecond,
 		duration*requestsPerSecond,
 	)
-flood:
-	for {
-		select {
-		case <-secondsTicker.C:
-			tick++
-			if tick > duration {
-				secondsTicker.Stop()
-				break flood
-			}
 
-			fmt.Println("Sending batch", tick)
-			go func() {
-				jobs.Add(1)
-				for i := 0; i < requestsPerSecond; i++ {
-					go func() {
-						jobs.Add(1)
-						go get(client, endpoint, agg)
-						jobs.Done()
-					}()
-				}
-				jobs.Done()
-			}()
+	for {
+		<-secondsTicker.C
+
+		tick++
+		if tick > duration {
+			secondsTicker.Stop()
+			break
 		}
+
+		fmt.Println("Sending batch", tick)
+
+		jobs.Add(1)
+		go func() {
+			for i := 0; i < requestsPerSecond; i++ {
+				jobs.Add(1)
+				go func() {
+					go get(client, endpoint, agg)
+					jobs.Done()
+				}()
+			}
+			jobs.Done()
+		}()
 	}
 
 	jobs.Wait()
-
 	agg.PrettyPrint()
+
 	if report != "" {
 		if err := agg.Write(report); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed writing report: %v\n", err)
@@ -129,7 +128,6 @@ func get(client *http.Client, endpoint string, agg *agg.Aggregation) {
 		fmt.Fprintf(os.Stderr, "Failed forming request %v: %v\n", endpoint, err)
 		return
 	}
-	req.Close = true
 
 	resp, err := client.Do(req.WithContext(httptrace.WithClientTrace(
 		req.Context(),
@@ -166,8 +164,8 @@ func get(client *http.Client, endpoint string, agg *agg.Aggregation) {
 	}
 
 	ttfb, ttlb := firstByte.Sub(connectStart), bodyRead.Sub(connectStart)
-
 	agg.AddSuccess(ttfb, ttlb)
+
 	if verbose {
 		fmt.Printf("ttfb=%s ttlb=%s delta=%s\n", ttfb, ttlb, ttlb-ttfb)
 	}
