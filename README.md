@@ -128,6 +128,9 @@ package](https://pkg.go.dev/github.com/andreykaipov/http-flooder/dummy-api/api?t
 
 ## Docker
 
+The following is a manual walkthrough of the contents of
+[`./test.sh`](./test.sh) as it's essentially a full integration test.
+
 Build our images:
 
 ```console

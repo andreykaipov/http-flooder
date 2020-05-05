@@ -1,8 +1,11 @@
 default:
 	@echo "Please specify a task:"
-	@awk -F: '/^[^\.\t].+$$/ {print "-",$$1}' Makefile | tail -n+2
+	@awk -F: '/^[^\.\t].+$$/ {print "-",$$1}' Makefile | tail -n+2 | sort
 
 images: dummy-api-image flooder-image
+
+test:
+	./test.sh
 
 .PHONY: dummy-api
 dummy-api:
