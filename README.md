@@ -31,7 +31,7 @@ endpoint. We can customize the way it works through the following flags:
 | endpoint            | string | the endpoint to GET, e.g. http://cool-api:8080/wow                 |         |
 | maxRetry            | int    | max retries to make for failed requests **(not implemented)**      | `3`     |
 | report              | string | output the report to a JSON file                                   | `""`    |
-| requests-per-second | int    | number of GET requests per second to initiate against the endpoint | `1`     |
+| requestsPerSecond   | int    | number of GET requests per second to initiate against the endpoint | `1`     |
 | timeout             | int    | timeout in milliseconds for the request to finish before failing   | `1000`  |
 | verbose             | bool   | verbose logging while querying the servers                         | `false` |
 
@@ -43,7 +43,7 @@ against our flood of requests.
 ```console
 ❯ make flooder
 
-❯ ./bin/flooder -endpoint http://google.com -requests-per-second 3 -duration 4 -report report.json
+❯ ./bin/flooder -endpoint http://google.com -requestsPerSecond 3 -duration 4 -report report.json
 Starting flood. :-)
 Running for 4 second(s), initiating 3 request(s) per second. Total requests send to server will be 12.
 Sending batch 1
@@ -88,20 +88,20 @@ one endpoint `/time` that will output time information about whatever timezone
 we pass it via the `tz` query parameter (UTC by default). See examples below.
 
 In addition, we can customize how reliable our web server behaves through the
-following flags, namely `delay-interval` and `failure-rate`.
+following flags, namely `delayInterval` and `failureRate`.
 
 | flag           | type   | description                                                       | default   |
 |----------------|--------|-------------------------------------------------------------------|-----------|
 | bind           | string | the bind address and port for the server to listen on             | `":8080"` |
-| delay-interval | string | add a random delay in milliseconds before processing a request    | `"0,100"` |
-| failure-rate   | float  | percentage of requests to respond with 500s to, e.g. 0.13 for 13% | `0.1`     |
+| delayInterval  | string | add a random delay in milliseconds before processing a request    | `"0,100"` |
+| failureRate    | float  | percentage of requests to respond with 500s to, e.g. 0.13 for 13% | `0.1`     |
 
 ### Let's see
 
 ```console
 ❯ make dummy-api
 
-❯ ./bin/dummy-api -failure-rate 0 &
+❯ ./bin/dummy-api -failureRate 0 &
 
 ❯ curl -sG http://localhost:8080/time -d tz=America/New_York | jq -r '"\(.zone) \(.unix)"'
 EDT 1588641463
@@ -147,7 +147,7 @@ Start up the dummy API, serving responses randomly with a rather large failure
 rate of 27%, and a delay interval of anywhere from 0 to 50 milliseconds:
 
 ```console
-❯ docker run --rm --detach --network=wow --name=api dummy-api -failure-rate 0.27 -delay-interval 0,50
+❯ docker run --rm --detach --network=wow --name=api dummy-api -failureRate 0.27 -delayInterval 0,50
 ```
 
 Once we're done testing, don't forget to stop this container via `docker stop
@@ -155,7 +155,7 @@ api`. For now, let's continue and run the flooder against our API for 100
 seconds at 100 requests per second:
 
 ```console
-❯ docker run --rm --network=wow flooder -endpoint http://api:8080/time -duration 100 -requests-per-second 100 2>/dev/null
+❯ docker run --rm --network=wow flooder -endpoint http://api:8080/time -duration 100 -requestsPerSecond 100 2>/dev/null
 Starting flood. :-)
 Running for 100 second(s), initiating 100 request(s) per second. Total requests
 send to server will be 10000.

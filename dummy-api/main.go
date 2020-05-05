@@ -23,8 +23,8 @@ var (
 
 func init() {
 	flag.StringVar(&bind, "bind", ":8080", "the bind address and port for the server to listen on")
-	flag.Float64Var(&failureRate, "failure-rate", 0.10, "percentage of requests to respond with 500s to, e.g. 0.13 for 13%")
-	flag.StringVar(&delayInterval, "delay-interval", "0,100", "add a random delay in milliseconds before processing a request")
+	flag.Float64Var(&failureRate, "failureRate", 0.10, "percentage of requests to respond with 500s to, e.g. 0.13 for 13%")
+	flag.StringVar(&delayInterval, "delayInterval", "0,100", "add a random delay in milliseconds before processing a request")
 	flag.Parse()
 
 	interval := strings.Split(delayInterval, ",")

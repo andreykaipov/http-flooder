@@ -4,7 +4,7 @@ default:
 
 images: dummy-api-image flooder-image
 
-test:
+test: images
 	./test.sh
 
 .PHONY: dummy-api
