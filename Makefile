@@ -1,15 +1,15 @@
 default:
 	@echo "Please specify a task:"
-	@awk -F: '/^[^.].+?:$$/ {print "-",$$1}' Makefile | tail -n+2
+	@awk -F: '/^[^\.\t].+$$/ {print "-",$$1}' Makefile | tail -n+2
 
-images: api-image flooder-image
+images: dummy-api-image flooder-image
 
-.PHONY: api
-api:
+.PHONY: dummy-api
+dummy-api:
 	go build -o ./bin/$@ ./$@
 
-api-image:
-	docker build -t dummy-api api/
+dummy-api-image:
+	docker build -t dummy-api dummy-api/
 
 .PHONY: flooder
 flooder:

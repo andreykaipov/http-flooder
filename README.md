@@ -3,11 +3,11 @@
 Hello! This project contains:
 
 1. A CLI to flood HTTP servers with requests (in the `flooder` directory).
-1. A dummy webserver (in the `api` directory).
+1. A dummy api (in the `dummy-api` directory).
 
 Contents:
 - [Flooder](#flooder) - documentation for the `flooder` CLI.
-- [API](#api) - documentation for the dummy webserver.
+- [Dummy API](#dummy api) - documentation for the dummy API.
 - [Docker](#docker) - examples showcasing the interaction between the two via
   Docker.
 
@@ -73,18 +73,17 @@ server's response headers.
 a connection to the server and the time when we finish reading the server's
 response body.
 
-## API
+## Dummy API
 
 ### How does it work?
 
-A dummy webserver, under the `api` directory, is what it sounds like. It'll spin
-up a webserver serving one endpoint `/time` that will output time information
-about whatever timezone (UTC by default) you pass it via the `tz` query
-parameter.
+A dummy API is exactly what it sounds like. It'll spin up a web server serving
+one endpoint `/time` that will output time information about whatever timezone
+we pass it via the `tz` query parameter (UTC by default).
 
 TODO add reference to godoc here
 
-In addition, we can customize how reliable our webserver behaves through the
+In addition, we can customize how reliable our web server behaves through the
 following flags, namely `delay-interval` and `failure-rate`.
 
 | flag           | type   | description                                                       | default   |
